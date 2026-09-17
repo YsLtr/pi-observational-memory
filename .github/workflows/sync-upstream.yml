@@ -26,7 +26,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # 需要完整历史做 git cherry / cherry-pick
           fetch-depth: 0
