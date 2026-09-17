@@ -1,0 +1,34 @@
+name: Sync upstream into fork
+
+# 为什么用定时任务而不是 webhook:
+# GitHub webhook 只能由仓库管理员在自己的仓库配置,上游(elpapi42/pi-observational-memory)
+# 不是我们的仓库,无法注册"上游 push 事件"。等价做法是 fork 上定时轮询:
+# 上游提交后 ≤24h 内本工作流自动把 上游 master + PR #73 同步到 fork master。
+# 说明:
+#   - fork 需在 GitHub → Settings → Actions → General 里启用(首次)
+#   - scheduled workflow 只在默认分支(master)上运行
+#   - fork 为 public 仓库,Actions 分钟免费
+#   - 幂等:内容无变化时脚本零操作退出,不会产生空提交或 force-push
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 需要完整历史做 git cherry / cherry-pick
+          fetch-depth: 0
+      - name: Sync upstream master + PR #73
+        run: ./scripts/sync-upstream.sh
