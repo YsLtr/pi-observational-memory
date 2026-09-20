@@ -40,7 +40,7 @@ export function resolveWorkerStreamSimple(
 
 	const registryStream = modelRegistry?.streamSimple;
 	if (typeof registryStream === "function") {
-		return (nextModel, context, options) => registryStream(nextModel, context, options);
+		return (nextModel, context, options) => registryStream.call(modelRegistry, nextModel, context, options);
 	}
 
 	try {

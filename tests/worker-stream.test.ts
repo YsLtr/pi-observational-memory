@@ -31,6 +31,25 @@ describe("resolveWorkerStreamSimple", () => {
 		expect(customStream).toHaveBeenCalledWith(model, context, undefined);
 	});
 
+	it("calls a class-based registry streamSimple with its receiver", () => {
+		const runtimeStream = vi.fn() as unknown as WorkerStreamSimple;
+		class RegistryDouble {
+			runtime = { streamSimple: runtimeStream };
+
+			streamSimple(model: any, context: any, options?: any) {
+				return this.runtime.streamSimple(model, context, options);
+			}
+		}
+
+		const registry = new RegistryDouble();
+		const model = {} as any;
+		const context = {} as any;
+
+		expect(resolveWorkerStreamSimple(model, registry as any)).not.toBe(compatStreamSimple);
+		resolveWorkerStreamSimple(model, registry as any)(model, context);
+		expect(runtimeStream).toHaveBeenCalledWith(model, context, undefined);
+	});
+
 	it("uses the exact provider's composed stream despite a foreign same-API registration", () => {
 		const cursorStream = vi.fn() as unknown as WorkerStreamSimple;
 		const foreignStream = vi.fn() as unknown as WorkerStreamSimple;
